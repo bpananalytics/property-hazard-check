@@ -24,20 +24,23 @@ POINTS = {  # approximate (lon, lat) of the sample places
 }
 
 CANDIDATES = {
-    "flood_fema_nfhl": "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28",
-    "cgs_fault": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/ArcGIS/rest/services/CGS_Alquist_Priolo_Fault_Zones/FeatureServer/0",
-    "cgs_liquefaction": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/ArcGIS/rest/services/CGS_Liquefaction_Zones/FeatureServer/0",
-    "cgs_landslide_a": "https://services2.arcgis.com/zr3KAIbsRSUyARHG/ArcGIS/rest/services/CGS_Landslide_Zones/FeatureServer/0",
-    "cgs_landslide_b": "https://gis.conservation.ca.gov/server/rest/services/Base/LegislativeDistrictsDashboard/FeatureServer/9",
-    "fhsz_lra_2025_a": "https://services.arcgis.com/yq3FgOI44hYHAFVZ/ArcGIS/rest/services/FHSZ_LRA_25/FeatureServer/0",
-    "fhsz_sra_a": "https://services1.arcgis.com/P5Mv5GY5S66M8Z1Q/ArcGIS/rest/services/High_FHSZ/FeatureServer/0",
+    "fhsz_lra_2025_calfire": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSALRA25_v1_All/FeatureServer/0",
+    "fhsz_sra_2025_calfire": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSZSRA25_3/FeatureServer/0",
+    "fhsz_combined_calfire_org": "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSZ_SRA_LRA_Combined/FeatureServer/0",
 }
 
-SEARCHES = [
-    'title:"Fire Hazard Severity Zones" AND type:"Feature Service"',
-    'title:"FHSZ" AND type:"Feature Service" AND owner:*calfire*',
-    'title:"Landslide Zones" AND type:"Feature Service" AND title:CGS',
+SAMPLE_ADDRESSES = [
+    "2227 Piedmont Ave, Berkeley, CA 94720",
+    "3300 Joaquin Miller Rd, Oakland, CA 94602",
+    "3601 Lyon St, San Francisco, CA 94123",
+    "1 Ferry Building, San Francisco, CA 94111",
+    "2775 Embarcadero Rd, Palo Alto, CA 94303",
+    "1 Frank H Ogawa Plaza, Oakland, CA 94612",
+    "1 Frank H Ogawa Plz, Oakland, CA 94612",
+    "1 E 1st St, Reno, NV 89501",
 ]
+
+SEARCHES: list[str] = []
 
 
 def ts(ms):
@@ -79,7 +82,24 @@ def search(q: str) -> None:
         print(f"  SEARCH ERROR: {e}")
 
 
+def geocode_all() -> None:
+    print("\n### Census geocoder: sample addresses")
+    url = "https://geocoding.geo.census.gov/geocoder/locations/onelineaddress"
+    for a in SAMPLE_ADDRESSES:
+        try:
+            r = requests.get(url, params={"address": a, "benchmark": "Public_AR_Current", "format": "json"}, headers=HEADERS, timeout=TIMEOUT)
+            m = r.json()["result"]["addressMatches"]
+            if m:
+                c = m[0]["coordinates"]
+                print(f"  {a:45s} -> {m[0]['matchedAddress']} ({c['y']:.5f}, {c['x']:.5f})")
+            else:
+                print(f"  {a:45s} -> NO MATCH")
+        except Exception as e:
+            print(f"  {a:45s} -> ERROR {e}")
+
+
 if __name__ == "__main__":
+    geocode_all()
     for n, u in CANDIDATES.items():
         inspect(n, u)
     for q in SEARCHES:

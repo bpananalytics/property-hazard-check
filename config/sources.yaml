@@ -4,7 +4,7 @@
 geocoder:
   url: https://geocoding.geo.census.gov/geocoder/locations/onelineaddress
   params: {benchmark: Public_AR_Current, format: json}
-  test_address: "1 Frank H Ogawa Plaza, Oakland, CA 94612"
+  test_address: "2775 Embarcadero Rd, Palo Alto, CA 94303"
 
 flood:
   url: https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28   # S_Fld_Haz_Ar
@@ -26,5 +26,7 @@ earthquake_liquefaction:
   test_point: [-122.4484, 37.8029]   # Palace of Fine Arts
 
 earthquake_landslide:
-  url: TODO   # chosen from discovery run
+  url: https://services2.arcgis.com/zr3KAIbsRSUyARHG/ArcGIS/rest/services/CGS_Landslide_Zones/FeatureServer/0
   fields: []
+  test_point: [-122.1830, 37.8150]   # Joaquin Miller Park (no zone here; checks the query works)
+  expect_hit: false
