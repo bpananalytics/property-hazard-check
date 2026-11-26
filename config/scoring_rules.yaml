@@ -2,7 +2,8 @@ version: v1
 tiers: [minimal, moderate, high, severe]   # plus "not_mapped" (source has no class here) and "unknown" (lookup failed)
 
 overall:
-  method: max            # overall tier = worst single hazard
+  method: max            # overall tier = worst single hazard, only when every hazard has a tier
+  partial_shows_no_overall_tier: true   # any not_mapped/unknown -> overall "Partial", naming the missing hazards
   compound_flag: "2+ hazards at high or above"
   unknown_marks_report_incomplete: true
   not_mapped_marks_report_partial: true

@@ -39,7 +39,8 @@ def test_nonwildland_shows_not_mapped_and_partial(monkeypatch):
     at = run("2775 Embarcadero Rd, Palo Alto, CA 94303")
     assert not at.exception
     assert any(m.value == "Not mapped" for m in at.metric)
-    assert any("partial" in c.value for c in at.caption)
+    assert any(m.label == "Overall" and m.value == "Partial" for m in at.metric)
+    assert any("wildfire not mapped" in c.value for c in at.caption)
 
 
 def test_earthquake_section_shows_fault_zone(monkeypatch):

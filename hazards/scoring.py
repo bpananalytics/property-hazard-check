@@ -70,3 +70,19 @@ def earthquake_tier(r) -> str:
     if r.unevaluated:
         return "not_mapped"
     return "moderate"
+
+
+TIER_ORDER = ["minimal", "moderate", "high", "severe"]
+
+
+def overall_tier(tiers: dict[str, str]) -> tuple[str, list[str]]:
+    """Roll hazard tiers up to one overall tier (config/scoring_rules.yaml -> overall).
+
+    Returns (overall, missing). If any hazard is not_mapped or unknown, the
+    overall is "partial" and `missing` names those hazards — no worst-of guess.
+    Otherwise the overall is the worst single hazard.
+    """
+    missing = [h for h, t in tiers.items() if t in ("not_mapped", "unknown")]
+    if missing:
+        return "partial", missing
+    return max(tiers.values(), key=TIER_ORDER.index), []
