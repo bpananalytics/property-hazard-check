@@ -1,19 +1,23 @@
-"""Hazard tiers. Owner: Brian (#4 flood mapping, #6 scoring engine).
-
-Tiers: "minimal", "moderate", "high", "severe", or "unknown".
-Rules live in config/scoring_rules.yaml.
-"""
-
-from __future__ import annotations
+# Every FEMA zone that counts as High risk
+HIGH_ZONES = {"A", "AE", "AH", "AO", "AR", "A99", "V", "VE"}
 
 
-def flood_tier(zone: str | None, subtype: str | None) -> str:
-    """Map a FEMA zone (+ subtype) to a tier.
+def flood_tier(zone, subtype=None):
+    """Turn a FEMA flood zone into High / Moderate / Low / Unknown."""
+    if zone is None:
+        return "Unknown"                 # no FEMA data
 
-    TODO (Brian, #4): implement using config/scoring_rules.yaml, then
-    replace the placeholder tests in tests/test_flood_tier.py.
-    Cases the real data has shown so far (see PR #13):
-      VE (Palo Alto Baylands), D (Ferry Building),
-      X + "AREA OF MINIMAL FLOOD HAZARD" (most samples).
-    """
-    return "unknown"
+    zone = zone.strip().upper()          # tidy the input: " ae " becomes "AE"
+
+    if zone in HIGH_ZONES:
+        return "High"
+
+    if zone == "X":
+        sub = (subtype or "").upper()
+        if "0.2 PCT" in sub or "LEVEE" in sub:
+            return "Moderate"            # shaded X
+        if "MINIMAL" in sub:
+            return "Low"                 # unshaded X
+        return "Unknown"                 # X, but we can't tell which kind
+
+    return "Unknown"                     # D, or any code we don't recognize
