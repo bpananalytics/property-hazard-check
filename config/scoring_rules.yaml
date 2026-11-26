@@ -1,32 +1,39 @@
 version: v1
-tiers: [minimal, moderate, high, severe]   # plus "unknown" for failed or unmapped lookups
+tiers: [minimal, moderate, high, severe]   # plus "not_mapped" (source has no class here) and "unknown" (lookup failed)
 
 overall:
   method: max            # overall tier = worst single hazard
   compound_flag: "2+ hazards at high or above"
   unknown_marks_report_incomplete: true
+  not_mapped_marks_report_partial: true
 
 flood:                   # FEMA NFHL FLD_ZONE (+ ZONE_SUBTY for shaded X, FLOODWAY)
   severe: [V, VE, FLOODWAY]
   high: [A, AE, AH, AO, AR, A99]
   moderate: ["X (0.2 PCT ANNUAL CHANCE)"]
   minimal: ["X (unshaded)"]
-  unknown: [D, unmapped]
+  not_mapped: [D, X (subtype unclear), unrecognized code, no polygon]   # no tier; never Minimal
+  unknown: [lookup failed]
 
-wildfire:                # CAL FIRE FHSZ class
+wildfire:                # CAL FIRE 2025 FHSZ class (LRA + SRA layers)
   severe: [Very High]
   high: [High]
   moderate: [Moderate]
-  minimal: [none]
+  not_mapped: [NonWildland, no polygon]   # no tier assigned; never Minimal
+  unknown: [lookup failed]
 
-earthquake:              # CGS zones; floor = moderate (statewide shaking)
+earthquake:              # CGS zones; floor = moderate (statewide shaking), except unevaluated areas
   severe: [alquist_priolo_fault_zone]
   high: [liquefaction_zone, landslide_zone]
   moderate: [none]
-  unknown: [unevaluated_area]
+  not_mapped: [unevaluated_area]   # no tier; never Minimal
+  unknown: [lookup failed]
 
 insurance_messages:
   flood_high_plus: "Flood insurance is typically required for a federally backed mortgage. Standard home policies exclude flood."
   wildfire_high_plus: "Higher chance of non-renewal or a FAIR Plan policy. Expect higher premiums and possible home-hardening requirements."
   earthquake_high_plus: "Standard policies exclude earthquake damage; a separate policy (e.g. CEA) is needed. Zone status must be disclosed in a sale."
   unknown: "Data unavailable — check the official map."
+  earthquake_not_mapped: "CGS hasn't evaluated this area for liquefaction or landslide. Earthquake shaking risk still applies statewide."
+  flood_not_mapped: "No FEMA flood class here. Lenders and insurers may still require a flood determination."
+  wildfire_not_mapped: "Not in a CAL FIRE fire hazard zone. Insurers may still rate wildfire risk using their own models."

@@ -40,7 +40,10 @@ Rules live in [`config/scoring_rules.yaml`](config/scoring_rules.yaml) — versi
 
 - **Overall tier = worst single hazard** (one severe hazard is enough to cause insurance trouble).
 - **Compound flag** when 2+ hazards are High or above.
-- **Unknown is never Minimal** — a failed lookup marks the report "Incomplete."
+- **No data is never Minimal.** Two labels, kept separate:
+  - **Not mapped** — the source has no class at this point (e.g. CAL FIRE "NonWildland", FEMA zone D).
+  - **Unknown** — the lookup failed.
+  Either one marks the report **partial**.
 - Earthquake has a **Moderate floor**: CGS zones map ground failure, not shaking.
 
 ## Sample addresses
