@@ -5,7 +5,7 @@ import streamlit as st
 from hazards.flood import lookup_flood
 from hazards.geocode import geocode
 from hazards.earthquake import lookup_earthquake
-from hazards.scoring import earthquake_tier, flood_tier, wildfire_tier
+from hazards.scoring import earthquake_tier, flood_tier, overall_tier, wildfire_tier
 from hazards.wildfire import lookup_wildfire
 
 TIER_LABELS = {
@@ -40,6 +40,7 @@ if submitted and address.strip():
     else:
         st.subheader(g.matched_address)
         st.caption(f"{g.lat:.5f}, {g.lon:.5f} · location from {g.source}")
+        overall_slot = st.empty()   # filled after all lookups, shown at the top
 
         with st.spinner("Checking FEMA flood zone…"):
             f = lookup_flood(g.lat, g.lon)
@@ -95,8 +96,17 @@ if submitted and address.strip():
             elif e_tier == "moderate":
                 st.caption("Not in a mapped CGS zone. Moderate floor: shaking risk applies statewide.")
 
-        if {f_tier, w_tier, e_tier} & {"unknown", "not_mapped"}:
-            st.caption("Report is partial: one or more hazards have no tier.")
+        overall, missing = overall_tier({"flood": f_tier, "wildfire": w_tier, "earthquake": e_tier})
+        with overall_slot.container():
+            if overall == "partial":
+                reasons = ", ".join(f"{h} {TIER_LABELS[t].lower()}" for h, t in
+                                    {"flood": f_tier, "wildfire": w_tier, "earthquake": e_tier}.items() if h in missing)
+                st.metric("Overall", "Partial")
+                st.caption(f"No overall tier: {reasons}.")
+            else:
+                st.metric("Overall", TIER_LABELS[overall])
+                st.caption("Overall = worst single hazard.")
+            st.divider()
 
 st.divider()
 st.caption("Not insurance advice. Results come from public hazard maps; insurers use their own models.")

@@ -38,7 +38,7 @@ Endpoints live in [`config/sources.yaml`](config/sources.yaml).
 
 Rules live in [`config/scoring_rules.yaml`](config/scoring_rules.yaml) — versioned, and shown on every report.
 
-- **Overall tier = worst single hazard** (one severe hazard is enough to cause insurance trouble).
+- **Overall tier = worst single hazard** (one severe hazard is enough to cause insurance trouble) — only when every hazard has a tier. Otherwise the overall is **Partial** and names what's missing; no guessing.
 - **Compound flag** when 2+ hazards are High or above.
 - **No data is never Minimal.** Two labels, kept separate:
   - **Not mapped** — the source has no class at this point (e.g. CAL FIRE "NonWildland", FEMA zone D).
