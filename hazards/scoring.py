@@ -10,10 +10,15 @@ SEVERE_ZONES = {"V", "VE"}
 HIGH_ZONES = {"A", "AE", "AH", "AO", "AR", "A99"}
 
 
-def flood_tier(zone: str | None, subtype: str | None = None) -> str:
-    """Map a FEMA zone (+ subtype) to a tier."""
+def flood_tier(zone: str | None, subtype: str | None = None, error: str | None = None) -> str:
+    """Map a FEMA zone (+ subtype) to a tier.
+
+    "unknown" = lookup failed. "not_mapped" = FEMA gives no usable class here.
+    """
+    if error:
+        return "unknown"                 # lookup failed
     if zone is None:
-        return "unknown"                 # unmapped / no FEMA data
+        return "not_mapped"              # no FEMA polygon at this point
 
     zone = zone.strip().upper()          # " ae " -> "AE"
     sub = (subtype or "").upper()
@@ -29,9 +34,9 @@ def flood_tier(zone: str | None, subtype: str | None = None) -> str:
             return "moderate"            # shaded X
         if "MINIMAL" in sub:
             return "minimal"             # unshaded X
-        return "unknown"                 # X, but can't tell which kind
+        return "not_mapped"              # X, but can't tell which kind
 
-    return "unknown"                     # D, or any unrecognized code
+    return "not_mapped"                  # D (undetermined), or any unrecognized code
 
 
 # CAL FIRE class by tier (mirrors config/scoring_rules.yaml -> wildfire)

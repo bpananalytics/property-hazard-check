@@ -43,14 +43,20 @@ if submitted and address.strip():
         with st.spinner("Checking FEMA flood zone…"):
             f = lookup_flood(g.lat, g.lon)
         st.markdown("#### Flood")
-        if f.error:
+        f_tier = flood_tier(f.zone, f.subtype, f.error)
+        if f_tier == "unknown":
             st.warning("FEMA flood data is unavailable right now. Tier: unknown.")
         else:
             c1, c2 = st.columns(2)
-            c1.metric("Tier", flood_tier(f.zone, f.subtype).capitalize())
-            c2.metric("FEMA zone", f.zone or "Not mapped")
+            c1.metric("Tier", TIER_LABELS[f_tier])
+            c2.metric("FEMA zone", f.zone or "No polygon")
             if f.subtype:
                 st.caption(f.subtype.capitalize())
+            if f_tier == "not_mapped":
+                st.caption(
+                    "No FEMA flood class here. "
+                    "Lenders and insurers may still require a flood determination."
+                )
         with st.spinner("Checking CAL FIRE hazard zone…"):
             w = lookup_wildfire(g.lat, g.lon)
         st.markdown("#### Wildfire")
@@ -68,7 +74,7 @@ if submitted and address.strip():
                 )
             elif w.area:
                 st.caption(f"{'State' if w.area == 'SRA' else 'Local'} Responsibility Area")
-        if w_tier in ("unknown", "not_mapped"):
+        if {f_tier, w_tier} & {"unknown", "not_mapped"}:
             st.caption("Report is partial: one or more hazards have no tier.")
         st.info("Earthquake check is coming next.")
 
