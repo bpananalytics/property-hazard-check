@@ -3,10 +3,8 @@ tiers: [minimal, moderate, high, severe]   # plus "not_mapped" (source has no cl
 
 overall:
   method: max            # overall tier = worst single hazard, only when every hazard has a tier
-  partial_shows_no_overall_tier: true   # any not_mapped/unknown -> overall "Partial", naming the missing hazards
+  insufficient_data: "No Score"   # any not_mapped/unknown -> no overall tier, no compound flag
   compound_flag: "2+ hazards at high or above"
-  unknown_marks_report_incomplete: true
-  not_mapped_marks_report_partial: true
 
 flood:                   # FEMA NFHL FLD_ZONE (+ ZONE_SUBTY for shaded X, FLOODWAY)
   severe: [V, VE, FLOODWAY]
@@ -35,6 +33,7 @@ insurance_messages:
   wildfire_high_plus: "Higher chance of non-renewal or a FAIR Plan policy. Expect higher premiums and possible home-hardening requirements."
   earthquake_high_plus: "Standard policies exclude earthquake damage; a separate policy (e.g. CEA) is needed. Zone status must be disclosed in a sale."
   unknown: "Data unavailable — check the official map."
+  earthquake_moderate_floor: "Not in a mapped CGS zone. Moderate floor: shaking risk applies statewide."
   earthquake_not_mapped: "CGS hasn't evaluated this area for liquefaction or landslide. Earthquake shaking risk still applies statewide."
   flood_not_mapped: "No FEMA flood class here. Lenders and insurers may still require a flood determination."
   wildfire_not_mapped: "Not in a CAL FIRE fire hazard zone. Insurers may still rate wildfire risk using their own models."

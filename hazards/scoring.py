@@ -1,4 +1,4 @@
-"""Hazard tiers. Owner: Brian (#4 flood mapping, #6 scoring engine).
+"""Hazard tiers and the overall roll-up. Owner: Brian (#4 flood mapping, #6 scoring engine).
 Tiers: "minimal", "moderate", "high", "severe", plus "unknown" (lookup failed)
 and "not_mapped" (source has no class at this point).
 Rules live in config/scoring_rules.yaml.
@@ -75,14 +75,17 @@ def earthquake_tier(r) -> str:
 TIER_ORDER = ["minimal", "moderate", "high", "severe"]
 
 
-def overall_tier(tiers: dict[str, str]) -> tuple[str, list[str]]:
+def overall_tier(tiers: dict[str, str]) -> str:
     """Roll hazard tiers up to one overall tier (config/scoring_rules.yaml -> overall).
 
-    Returns (overall, missing). If any hazard is not_mapped or unknown, the
-    overall is "partial" and `missing` names those hazards — no worst-of guess.
-    Otherwise the overall is the worst single hazard.
+    Any not_mapped or unknown hazard -> "no_score" (insufficient data); no
+    worst-of guess. Otherwise the worst single hazard.
     """
-    missing = [h for h, t in tiers.items() if t in ("not_mapped", "unknown")]
-    if missing:
-        return "partial", missing
-    return max(tiers.values(), key=TIER_ORDER.index), []
+    if any(t in ("not_mapped", "unknown") for t in tiers.values()):
+        return "no_score"
+    return max(tiers.values(), key=TIER_ORDER.index)
+
+
+def compound_flag(tiers: dict[str, str]) -> bool:
+    """True when 2+ hazards are High or above (only meaningful with a full score)."""
+    return sum(t in ("high", "severe") for t in tiers.values()) >= 2

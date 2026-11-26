@@ -38,12 +38,12 @@ Endpoints live in [`config/sources.yaml`](config/sources.yaml).
 
 Rules live in [`config/scoring_rules.yaml`](config/scoring_rules.yaml) — versioned, and shown on every report.
 
-- **Overall tier = worst single hazard** (one severe hazard is enough to cause insurance trouble) — only when every hazard has a tier. Otherwise the overall is **Partial** and names what's missing; no guessing.
-- **Compound flag** when 2+ hazards are High or above.
+- **Overall tier = worst single hazard** (one severe hazard is enough to cause insurance trouble) — only when every hazard has a tier. Otherwise the overall is **No Score** (insufficient data); no guessing.
+- **Compound flag** when 2+ hazards are High or above (scored reports only).
 - **No data is never Minimal.** Two labels, kept separate:
   - **Not mapped** — the source has no class at this point (e.g. CAL FIRE "NonWildland", FEMA zone D).
   - **Unknown** — the lookup failed.
-  Either one marks the report **partial**.
+  Either one means the overall is **No Score**.
 - Earthquake has a **Moderate floor**: CGS zones map ground failure, not shaking.
 
 ## Sample addresses
