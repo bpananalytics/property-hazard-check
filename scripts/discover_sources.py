@@ -2,7 +2,8 @@
 
 Prints, for each candidate URL: layer name, last edit date, fields, and what
 each sample point returns. Also searches ArcGIS Online for official items.
-Used to choose the URLs in config/sources.yaml. Always exits 0.
+Used to choose the URLs in config/sources.yaml (Nov 2026). Run manually;
+its candidate list is a record of what was tested. Always exits 0.
 """
 
 import datetime as dt
