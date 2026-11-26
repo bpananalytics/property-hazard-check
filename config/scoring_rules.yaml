@@ -1,0 +1,32 @@
+version: v1
+tiers: [minimal, moderate, high, severe]   # plus "unknown" for failed or unmapped lookups
+
+overall:
+  method: max            # overall tier = worst single hazard
+  compound_flag: "2+ hazards at high or above"
+  unknown_marks_report_incomplete: true
+
+flood:                   # FEMA NFHL FLD_ZONE (+ ZONE_SUBTY for shaded X, FLOODWAY)
+  severe: [V, VE, FLOODWAY]
+  high: [A, AE, AH, AO, AR, A99]
+  moderate: ["X (0.2 PCT ANNUAL CHANCE)"]
+  minimal: ["X (unshaded)"]
+  unknown: [D, unmapped]
+
+wildfire:                # CAL FIRE FHSZ class
+  severe: [Very High]
+  high: [High]
+  moderate: [Moderate]
+  minimal: [none]
+
+earthquake:              # CGS zones; floor = moderate (statewide shaking)
+  severe: [alquist_priolo_fault_zone]
+  high: [liquefaction_zone, landslide_zone]
+  moderate: [none]
+  unknown: [unevaluated_area]
+
+insurance_messages:
+  flood_high_plus: "Flood insurance is typically required for a federally backed mortgage. Standard home policies exclude flood."
+  wildfire_high_plus: "Higher chance of non-renewal or a FAIR Plan policy. Expect higher premiums and possible home-hardening requirements."
+  earthquake_high_plus: "Standard policies exclude earthquake damage; a separate policy (e.g. CEA) is needed. Zone status must be disclosed in a sale."
+  unknown: "Data unavailable — check the official map."
