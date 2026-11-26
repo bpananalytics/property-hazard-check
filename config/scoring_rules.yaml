@@ -3,10 +3,8 @@ tiers: [minimal, moderate, high, severe]   # plus "not_mapped" (source has no cl
 
 overall:
   method: max            # overall tier = worst single hazard, only when every hazard has a tier
-  partial_shows_no_overall_tier: true   # any not_mapped/unknown -> overall "Partial", naming the missing hazards
+  insufficient_data: "No Score"   # any not_mapped/unknown -> no overall tier, no compound flag
   compound_flag: "2+ hazards at high or above"
-  unknown_marks_report_incomplete: true
-  not_mapped_marks_report_partial: true
 
 flood:                   # FEMA NFHL FLD_ZONE (+ ZONE_SUBTY for shaded X, FLOODWAY)
   severe: [V, VE, FLOODWAY]

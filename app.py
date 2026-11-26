@@ -5,7 +5,7 @@ import streamlit as st
 from hazards.flood import lookup_flood
 from hazards.geocode import geocode
 from hazards.earthquake import lookup_earthquake
-from hazards.scoring import earthquake_tier, flood_tier, overall_tier, wildfire_tier
+from hazards.scoring import compound_flag, earthquake_tier, flood_tier, overall_tier, wildfire_tier
 from hazards.wildfire import lookup_wildfire
 
 TIER_LABELS = {
@@ -96,16 +96,16 @@ if submitted and address.strip():
             elif e_tier == "moderate":
                 st.caption("Not in a mapped CGS zone. Moderate floor: shaking risk applies statewide.")
 
-        overall, missing = overall_tier({"flood": f_tier, "wildfire": w_tier, "earthquake": e_tier})
+        tiers = {"flood": f_tier, "wildfire": w_tier, "earthquake": e_tier}
+        overall, _ = overall_tier(tiers)
         with overall_slot.container():
-            if overall == "partial":
-                reasons = ", ".join(f"{h} {TIER_LABELS[t].lower()}" for h, t in
-                                    {"flood": f_tier, "wildfire": w_tier, "earthquake": e_tier}.items() if h in missing)
-                st.metric("Overall", "Partial")
-                st.caption(f"No overall tier: {reasons}.")
+            if overall == "no_score":
+                st.metric("Overall", "No Score")
+                st.caption("Insufficient data")
             else:
                 st.metric("Overall", TIER_LABELS[overall])
-                st.caption("Overall = worst single hazard.")
+                if compound_flag(tiers):
+                    st.warning("Compound risk: 2 or more hazards are High or above.")
             st.divider()
 
 st.divider()
