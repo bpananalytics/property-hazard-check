@@ -4,7 +4,8 @@ import streamlit as st
 
 from hazards.flood import lookup_flood
 from hazards.geocode import geocode
-from hazards.scoring import flood_tier, wildfire_tier
+from hazards.earthquake import lookup_earthquake
+from hazards.scoring import earthquake_tier, flood_tier, wildfire_tier
 from hazards.wildfire import lookup_wildfire
 
 TIER_LABELS = {
@@ -74,9 +75,28 @@ if submitted and address.strip():
                 )
             elif w.area:
                 st.caption(f"{'State' if w.area == 'SRA' else 'Local'} Responsibility Area")
-        if {f_tier, w_tier} & {"unknown", "not_mapped"}:
+
+        with st.spinner("Checking CGS earthquake zones…"):
+            e = lookup_earthquake(g.lat, g.lon)
+        st.markdown("#### Earthquake")
+        e_tier = earthquake_tier(e)
+        if e_tier == "unknown":
+            st.warning("CGS earthquake data is unavailable right now. Tier: unknown.")
+        else:
+            zone_names = {"fault": "Fault zone", "liquefaction": "Liquefaction", "landslide": "Landslide"}
+            c1, c2 = st.columns(2)
+            c1.metric("Tier", TIER_LABELS[e_tier])
+            c2.metric("CGS zones", ", ".join(zone_names[z] for z in e.zones) or "None")
+            if e_tier == "not_mapped":
+                st.caption(
+                    "CGS hasn't evaluated this area for liquefaction or landslide. "
+                    "Earthquake shaking risk still applies statewide."
+                )
+            elif e_tier == "moderate":
+                st.caption("Not in a mapped CGS zone. Moderate floor: shaking risk applies statewide.")
+
+        if {f_tier, w_tier, e_tier} & {"unknown", "not_mapped"}:
             st.caption("Report is partial: one or more hazards have no tier.")
-        st.info("Earthquake check is coming next.")
 
 st.divider()
 st.caption("Not insurance advice. Results come from public hazard maps; insurers use their own models.")

@@ -40,3 +40,11 @@ def test_nonwildland_shows_not_mapped_and_partial(monkeypatch):
     assert not at.exception
     assert any(m.value == "Not mapped" for m in at.metric)
     assert any("partial" in c.value for c in at.caption)
+
+
+def test_earthquake_section_shows_fault_zone(monkeypatch):
+    import hazards.earthquake as earthquake
+    monkeypatch.setattr(earthquake, "point_query", lambda url, *a, **k: [{"OBJECTID": 1}] if "Alquist" in url else [])
+    at = run("2775 Embarcadero Rd, Palo Alto, CA 94303")
+    assert not at.exception
+    assert any(m.value == "Fault zone" for m in at.metric)

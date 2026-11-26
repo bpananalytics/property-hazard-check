@@ -22,7 +22,7 @@ wildfire:                # CAL FIRE 2025 FHSZ class (LRA + SRA layers)
   not_mapped: [NonWildland, no polygon]   # no tier assigned; never Minimal
   unknown: [lookup failed]
 
-earthquake:              # CGS zones; floor = moderate (statewide shaking)
+earthquake:              # CGS zones; floor = moderate (statewide shaking), except unevaluated areas
   severe: [alquist_priolo_fault_zone]
   high: [liquefaction_zone, landslide_zone]
   moderate: [none]
@@ -34,5 +34,6 @@ insurance_messages:
   wildfire_high_plus: "Higher chance of non-renewal or a FAIR Plan policy. Expect higher premiums and possible home-hardening requirements."
   earthquake_high_plus: "Standard policies exclude earthquake damage; a separate policy (e.g. CEA) is needed. Zone status must be disclosed in a sale."
   unknown: "Data unavailable — check the official map."
+  earthquake_not_mapped: "CGS hasn't evaluated this area for liquefaction or landslide. Earthquake shaking risk still applies statewide."
   flood_not_mapped: "No FEMA flood class here. Lenders and insurers may still require a flood determination."
   wildfire_not_mapped: "Not in a CAL FIRE fire hazard zone. Insurers may still rate wildfire risk using their own models."

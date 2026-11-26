@@ -37,3 +37,9 @@ earthquake_landslide:
   fields: []
   test_point: [-122.1830, 37.8150]   # Joaquin Miller Park (no zone here; checks the query works)
   expect_hit: false
+
+earthquake_unevaluated:   # CGS quadrangles not yet evaluated for liquefaction/landslide
+  url: https://services2.arcgis.com/zr3KAIbsRSUyARHG/ArcGIS/rest/services/CGS_SHZ_Unevaluated_Areas/FeatureServer/0
+  fields: [QUAD_NAME]
+  test_point: [-120.95, 41.19]   # near Adin (Modoc County); checks the query works
+  expect_hit: false

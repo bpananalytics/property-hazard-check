@@ -52,3 +52,21 @@ def wildfire_tier(fhsz: str | None, error: str | None = None) -> str:
     if error:
         return "unknown"
     return WILDFIRE_TIERS.get((fhsz or "").strip(), "not_mapped")
+
+
+def earthquake_tier(r) -> str:
+    """Map an EarthquakeResult to a tier (config/scoring_rules.yaml -> earthquake).
+
+    Fault zone -> severe. Liquefaction or landslide zone -> high.
+    Unevaluated quadrangle -> not_mapped. Otherwise moderate (statewide shaking floor).
+    A failed layer -> unknown, unless a fault zone already makes it severe.
+    """
+    if r.fault:
+        return "severe"
+    if r.errors:
+        return "unknown"
+    if r.liquefaction or r.landslide:
+        return "high"
+    if r.unevaluated:
+        return "not_mapped"
+    return "moderate"
