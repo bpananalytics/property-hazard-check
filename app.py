@@ -1,17 +1,38 @@
 """Property Hazard Check — Streamlit entry point."""
 
-import streamlit as st
+import pathlib
 
+import streamlit as st
+import yaml
+
+from hazards.earthquake import lookup_earthquake
 from hazards.flood import lookup_flood
 from hazards.geocode import geocode
-from hazards.earthquake import lookup_earthquake
 from hazards.scoring import compound_flag, earthquake_tier, flood_tier, overall_tier, wildfire_tier
 from hazards.wildfire import lookup_wildfire
+
+RULES = yaml.safe_load((pathlib.Path(__file__).parent / "config" / "scoring_rules.yaml").read_text())
+MESSAGES = RULES["insurance_messages"]
 
 TIER_LABELS = {
     "minimal": "Minimal", "moderate": "Moderate", "high": "High",
     "severe": "Severe", "not_mapped": "Not mapped", "unknown": "Unknown",
 }
+ZONE_NAMES = {"fault": "Fault zone", "liquefaction": "Liquefaction", "landslide": "Landslide"}
+
+
+def hazard_section(title, source, tier, code_label, code_value, notes=()):
+    """One hazard block: tier + raw source code, or an 'unavailable' warning."""
+    st.markdown(f"#### {title}")
+    if tier == "unknown":
+        st.warning(f"{source} data is unavailable right now. Tier: unknown.")
+        return
+    c1, c2 = st.columns(2)
+    c1.metric("Tier", TIER_LABELS[tier])
+    c2.metric(code_label, code_value)
+    for note in notes:
+        if note:
+            st.caption(note)
 
 st.set_page_config(page_title="Property Hazard Check", page_icon="🛡️", layout="centered")
 
@@ -44,60 +65,34 @@ if submitted and address.strip():
 
         with st.spinner("Checking FEMA flood zone…"):
             f = lookup_flood(g.lat, g.lon)
-        st.markdown("#### Flood")
         f_tier = flood_tier(f.zone, f.subtype, f.error)
-        if f_tier == "unknown":
-            st.warning("FEMA flood data is unavailable right now. Tier: unknown.")
-        else:
-            c1, c2 = st.columns(2)
-            c1.metric("Tier", TIER_LABELS[f_tier])
-            c2.metric("FEMA zone", f.zone or "No polygon")
-            if f.subtype:
-                st.caption(f.subtype.capitalize())
-            if f_tier == "not_mapped":
-                st.caption(
-                    "No FEMA flood class here. "
-                    "Lenders and insurers may still require a flood determination."
-                )
+        hazard_section(
+            "Flood", "FEMA", f_tier, "FEMA zone", f.zone or "No polygon",
+            notes=[f.subtype.capitalize() if f.subtype else None,
+                   MESSAGES["flood_not_mapped"] if f_tier == "not_mapped" else None],
+        )
+
         with st.spinner("Checking CAL FIRE hazard zone…"):
             w = lookup_wildfire(g.lat, g.lon)
-        st.markdown("#### Wildfire")
         w_tier = wildfire_tier(w.fhsz, w.error)
-        if w_tier == "unknown":
-            st.warning("CAL FIRE data is unavailable right now. Tier: unknown.")
-        else:
-            c1, c2 = st.columns(2)
-            c1.metric("Tier", TIER_LABELS[w_tier])
-            c2.metric("CAL FIRE class", w.fhsz or "No polygon")
-            if w_tier == "not_mapped":
-                st.caption(
-                    "Not in a CAL FIRE fire hazard zone. "
-                    "Insurers may still rate wildfire risk using their own models."
-                )
-            elif w.area:
-                st.caption(f"{'State' if w.area == 'SRA' else 'Local'} Responsibility Area")
+        area = {"SRA": "State Responsibility Area", "LRA": "Local Responsibility Area"}.get(w.area)
+        hazard_section(
+            "Wildfire", "CAL FIRE", w_tier, "CAL FIRE class", w.fhsz or "No polygon",
+            notes=[MESSAGES["wildfire_not_mapped"] if w_tier == "not_mapped" else area],
+        )
 
         with st.spinner("Checking CGS earthquake zones…"):
             e = lookup_earthquake(g.lat, g.lon)
-        st.markdown("#### Earthquake")
         e_tier = earthquake_tier(e)
-        if e_tier == "unknown":
-            st.warning("CGS earthquake data is unavailable right now. Tier: unknown.")
-        else:
-            zone_names = {"fault": "Fault zone", "liquefaction": "Liquefaction", "landslide": "Landslide"}
-            c1, c2 = st.columns(2)
-            c1.metric("Tier", TIER_LABELS[e_tier])
-            c2.metric("CGS zones", ", ".join(zone_names[z] for z in e.zones) or "None")
-            if e_tier == "not_mapped":
-                st.caption(
-                    "CGS hasn't evaluated this area for liquefaction or landslide. "
-                    "Earthquake shaking risk still applies statewide."
-                )
-            elif e_tier == "moderate":
-                st.caption("Not in a mapped CGS zone. Moderate floor: shaking risk applies statewide.")
+        hazard_section(
+            "Earthquake", "CGS earthquake", e_tier, "CGS zones",
+            ", ".join(ZONE_NAMES[z] for z in e.zones) or "None",
+            notes=[{"not_mapped": MESSAGES["earthquake_not_mapped"],
+                    "moderate": MESSAGES["earthquake_moderate_floor"]}.get(e_tier)],
+        )
 
         tiers = {"flood": f_tier, "wildfire": w_tier, "earthquake": e_tier}
-        overall, _ = overall_tier(tiers)
+        overall = overall_tier(tiers)
         with overall_slot.container():
             if overall == "no_score":
                 st.metric("Overall", "No Score")
