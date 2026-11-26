@@ -1,5 +1,6 @@
 """Hazard tiers. Owner: Brian (#4 flood mapping, #6 scoring engine).
-Tiers: "minimal", "moderate", "high", "severe", or "unknown".
+Tiers: "minimal", "moderate", "high", "severe", plus "unknown" (lookup failed)
+and "not_mapped" (source has no class at this point).
 Rules live in config/scoring_rules.yaml.
 """
 from __future__ import annotations
@@ -31,3 +32,18 @@ def flood_tier(zone: str | None, subtype: str | None = None) -> str:
         return "unknown"                 # X, but can't tell which kind
 
     return "unknown"                     # D, or any unrecognized code
+
+
+# CAL FIRE class by tier (mirrors config/scoring_rules.yaml -> wildfire)
+WILDFIRE_TIERS = {"Very High": "severe", "High": "high", "Moderate": "moderate"}
+
+
+def wildfire_tier(fhsz: str | None, error: str | None = None) -> str:
+    """Map a CAL FIRE FHSZ class to a tier.
+
+    "unknown" = lookup failed. "not_mapped" = no CAL FIRE zone here
+    (NonWildland or no polygon); we don't assign a tier we don't have.
+    """
+    if error:
+        return "unknown"
+    return WILDFIRE_TIERS.get((fhsz or "").strip(), "not_mapped")

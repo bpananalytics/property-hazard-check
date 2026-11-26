@@ -4,7 +4,13 @@ import streamlit as st
 
 from hazards.flood import lookup_flood
 from hazards.geocode import geocode
-from hazards.scoring import flood_tier
+from hazards.scoring import flood_tier, wildfire_tier
+from hazards.wildfire import lookup_wildfire
+
+TIER_LABELS = {
+    "minimal": "Minimal", "moderate": "Moderate", "high": "High",
+    "severe": "Severe", "not_mapped": "Not mapped", "unknown": "Unknown",
+}
 
 st.set_page_config(page_title="Property Hazard Check", page_icon="🛡️", layout="centered")
 
@@ -45,7 +51,26 @@ if submitted and address.strip():
             c2.metric("FEMA zone", f.zone or "Not mapped")
             if f.subtype:
                 st.caption(f.subtype.capitalize())
-        st.info("Wildfire and earthquake checks are coming next.")
+        with st.spinner("Checking CAL FIRE hazard zone…"):
+            w = lookup_wildfire(g.lat, g.lon)
+        st.markdown("#### Wildfire")
+        w_tier = wildfire_tier(w.fhsz, w.error)
+        if w_tier == "unknown":
+            st.warning("CAL FIRE data is unavailable right now. Tier: unknown.")
+        else:
+            c1, c2 = st.columns(2)
+            c1.metric("Tier", TIER_LABELS[w_tier])
+            c2.metric("CAL FIRE class", w.fhsz or "No polygon")
+            if w_tier == "not_mapped":
+                st.caption(
+                    "Not in a CAL FIRE fire hazard zone. "
+                    "Insurers may still rate wildfire risk using their own models."
+                )
+            elif w.area:
+                st.caption(f"{'State' if w.area == 'SRA' else 'Local'} Responsibility Area")
+        if w_tier in ("unknown", "not_mapped"):
+            st.caption("Report is partial: one or more hazards have no tier.")
+        st.info("Earthquake check is coming next.")
 
 st.divider()
 st.caption("Not insurance advice. Results come from public hazard maps; insurers use their own models.")
