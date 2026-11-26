@@ -1,23 +1,39 @@
 # All endpoints in one place so a URL change is a one-line fix.
-# TODO: confirm each URL and its field names with scripts/health_check.py before building on it.
+# test_point is (lon, lat). Checked daily by scripts/health_check.py.
 
 geocoder:
   url: https://geocoding.geo.census.gov/geocoder/locations/onelineaddress
   params: {benchmark: Public_AR_Current, format: json}
+  test_address: "2775 Embarcadero Rd, Palo Alto, CA 94303"
 
 flood:
-  url: https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28   # S_Fld_Haz_Ar — verify
+  url: https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28   # S_Fld_Haz_Ar
   fields: [FLD_ZONE, ZONE_SUBTY, SFHA_TF]
+  test_point: [-122.1056, 37.4597]   # Palo Alto Baylands
 
-wildfire:
-  url: TODO   # CAL FIRE / OSFM FHSZ feature service (SRA + LRA 2025)
-  fields: [TODO]
+wildfire:   # CAL FIRE 2025 Local Responsibility Area (cities); FHSZ -3 = NonWildland
+  url: https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSALRA25_v1_All/FeatureServer/0
+  fields: [SRA, FHSZ, FHSZ_Description]
+  test_point: [-122.1893, 37.8099]   # Joaquin Miller Park
+
+wildfire_sra:   # CAL FIRE 2025 State Responsibility Area (rural); no hits in cities
+  url: https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/FHSZSRA25_3/FeatureServer/0
+  fields: []
+  test_point: [-122.1893, 37.8099]
+  expect_hit: false
 
 earthquake_fault:
   url: https://services2.arcgis.com/zr3KAIbsRSUyARHG/ArcGIS/rest/services/CGS_Alquist_Priolo_Fault_Zones/FeatureServer/0
+  fields: [QUAD_NAME, ZN_RELEASED]
+  test_point: [-122.2508, 37.8712]   # Memorial Stadium
 
 earthquake_liquefaction:
   url: https://services2.arcgis.com/zr3KAIbsRSUyARHG/ArcGIS/rest/services/CGS_Liquefaction_Zones/FeatureServer/0
+  fields: [QUAD_NAME, RELEASED]
+  test_point: [-122.4484, 37.8029]   # Palace of Fine Arts
 
 earthquake_landslide:
-  url: TODO   # CGS Seismic Hazards Program: Landslide Zones
+  url: https://services2.arcgis.com/zr3KAIbsRSUyARHG/ArcGIS/rest/services/CGS_Landslide_Zones/FeatureServer/0
+  fields: []
+  test_point: [-122.1830, 37.8150]   # Joaquin Miller Park (no zone here; checks the query works)
+  expect_hit: false

@@ -1,8 +1,8 @@
-role,place,address,expected,verified
-fault_zone,Cal Memorial Stadium,"2227 Piedmont Ave, Berkeley, CA 94720",earthquake severe (Alquist-Priolo),no
-wildfire,Joaquin Miller Park,"3300 Joaquin Miller Rd, Oakland, CA 94602",wildfire severe (Very High),no
-liquefaction,Palace of Fine Arts,"3601 Lyon St, San Francisco, CA 94123",earthquake high (liquefaction),no
-multi_hazard,Ferry Building,"1 Ferry Building, San Francisco, CA 94111",earthquake high + flood (compound),no
-flood,Palo Alto Baylands,"2775 Embarcadero Rd, Palo Alto, CA 94303",flood high (A zone),no
-low_risk_control,Oakland City Hall,"1 Frank H Ogawa Plaza, Oakland, CA 94612",minimal except earthquake floor,no
-error_case,Reno City Hall,"1 E 1st St, Reno, NV 89501",outside California,no
+role,place,address,state,lat,lon,coord_source,expected,verified
+fault_zone,Cal Memorial Stadium,"2227 Piedmont Ave, Berkeley, CA 94720",CA,37.87082,-122.25255,census,earthquake severe (Alquist-Priolo),no
+wildfire,Joaquin Miller Park,"3300 Joaquin Miller Rd, Oakland, CA 94602",CA,37.81500,-122.18300,manual,wildfire high (point inside park; entrance is Moderate),no
+liquefaction,Palace of Fine Arts,"3601 Lyon St, San Francisco, CA 94123",CA,37.80290,-122.44840,manual,earthquake high (liquefaction),no
+multi_hazard,Ferry Building,"1 Ferry Building, San Francisco, CA 94111",CA,37.79550,-122.39370,manual,liquefaction + flood zone D (unknown),no
+flood,Palo Alto Baylands,"2775 Embarcadero Rd, Palo Alto, CA 94303",CA,37.45970,-122.10560,manual,flood severe (VE),no
+low_risk_control,Oakland City Hall,"1 Frank H Ogawa Plaza, Oakland, CA 94612",CA,37.80530,-122.27250,manual,minimal except earthquake floor,no
+error_case,Reno City Hall,"1 E 1st St, Reno, NV 89501",NV,39.52592,-119.81289,census,outside California,no
