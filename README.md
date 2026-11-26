@@ -6,7 +6,7 @@ Enter a California address and get a one-page report on its **flood, wildfire, a
 
 > **Not insurance advice.** Results come from public hazard maps. Insurers use their own models.
 
-**Live app:** _coming soon (Streamlit Community Cloud)_
+**Live app:** https://property-hazard-check.streamlit.app/
 
 ## Run locally
 
