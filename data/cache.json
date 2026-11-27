@@ -1,0 +1,116 @@
+{
+  "1ferrybuildingsanfranciscoca94111": {
+    "address": "1 Ferry Building, San Francisco, CA 94111",
+    "earthquake": {
+      "fault": false,
+      "landslide": false,
+      "liquefaction": true,
+      "unevaluated": false
+    },
+    "fetched": "2026-11-26",
+    "flood": {
+      "sfha": false,
+      "subtype": null,
+      "zone": "D"
+    },
+    "wildfire": {
+      "area": "LRA",
+      "fhsz": "NonWildland"
+    }
+  },
+  "1frankhogawaplazaoaklandca94612": {
+    "address": "1 Frank H Ogawa Plaza, Oakland, CA 94612",
+    "earthquake": {
+      "fault": false,
+      "landslide": false,
+      "liquefaction": false,
+      "unevaluated": false
+    },
+    "fetched": "2026-11-26",
+    "flood": {
+      "sfha": false,
+      "subtype": "AREA OF MINIMAL FLOOD HAZARD",
+      "zone": "X"
+    },
+    "wildfire": {
+      "area": "LRA",
+      "fhsz": "NonWildland"
+    }
+  },
+  "2227piedmontaveberkeleyca94720": {
+    "address": "2227 Piedmont Ave, Berkeley, CA 94720",
+    "earthquake": {
+      "fault": true,
+      "landslide": false,
+      "liquefaction": false,
+      "unevaluated": false
+    },
+    "fetched": "2026-11-26",
+    "flood": {
+      "sfha": false,
+      "subtype": "AREA OF MINIMAL FLOOD HAZARD",
+      "zone": "X"
+    },
+    "wildfire": {
+      "area": "LRA",
+      "fhsz": "NonWildland"
+    }
+  },
+  "2775embarcaderordpaloaltoca94303": {
+    "address": "2775 Embarcadero Rd, Palo Alto, CA 94303",
+    "earthquake": {
+      "fault": false,
+      "landslide": false,
+      "liquefaction": true,
+      "unevaluated": false
+    },
+    "fetched": "2026-11-26",
+    "flood": {
+      "sfha": true,
+      "subtype": null,
+      "zone": "VE"
+    },
+    "wildfire": {
+      "area": "LRA",
+      "fhsz": "NonWildland"
+    }
+  },
+  "3300joaquinmillerrdoaklandca94602": {
+    "address": "3300 Joaquin Miller Rd, Oakland, CA 94602",
+    "earthquake": {
+      "fault": false,
+      "landslide": false,
+      "liquefaction": false,
+      "unevaluated": false
+    },
+    "fetched": "2026-11-26",
+    "flood": {
+      "sfha": false,
+      "subtype": "AREA OF MINIMAL FLOOD HAZARD",
+      "zone": "X"
+    },
+    "wildfire": {
+      "area": "LRA",
+      "fhsz": "High"
+    }
+  },
+  "3601lyonstsanfranciscoca94123": {
+    "address": "3601 Lyon St, San Francisco, CA 94123",
+    "earthquake": {
+      "fault": false,
+      "landslide": false,
+      "liquefaction": true,
+      "unevaluated": false
+    },
+    "fetched": "2026-11-26",
+    "flood": {
+      "sfha": false,
+      "subtype": "AREA OF MINIMAL FLOOD HAZARD",
+      "zone": "X"
+    },
+    "wildfire": {
+      "area": "LRA",
+      "fhsz": "NonWildland"
+    }
+  }
+}
