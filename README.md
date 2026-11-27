@@ -17,7 +17,17 @@ California homebuyers often learn about flood, wildfire, or earthquake exposure 
 
 This app puts them in one place: enter an address, get one page with each hazard's tier, the official zone code, and what it means for insurance.
 
-<!-- TODO (Brian): case study — why you built this, the hardest decision, what you'd do next -->
+## Case study
+
+**Why I built it.** Hazard exposure is one of the biggest questions in buying California property, and the answers are public but scattered. I wanted a tool anyone could use to see a property's flood, wildfire, and earthquake picture in one place.
+
+**Who it's for.** Anyone looking at a property — especially homeowners and realtors, who need to understand and disclose a property's hazards.
+
+**The decision I didn't expect.** I assumed every address would land in a CAL FIRE zone. Instead, most urban addresses are coded **NonWildland** — CAL FIRE's explicit "not wildland" class. My first rule treated that as missing data, which made the overall score "No Score" for most Bay Area addresses, even ones in a fault zone. I changed NonWildland to **Minimal**, since it's a real classification and not a gap, while keeping true gaps (no polygon, failed lookups) as Not mapped so missing data never reads as safe.
+
+**What I'd change in the scoring.** The overall tier is the single worst hazard, and earthquake has a Moderate floor because shaking risk applies statewide. That's simple and conservative, but it treats hazards as equally likely everywhere. Next I'd weight by context: in dense urban areas wildfire is unlikely, and since nearly the whole Bay Area carries earthquake risk, flagging it everywhere tells a buyer less than how one address compares with its neighbors.
+
+**Next step.** A Google Maps link on each report, so users can see the point being scored and sanity-check it against the zone maps.
 
 ## Run locally
 
