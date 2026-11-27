@@ -1,6 +1,14 @@
 """Smoke tests for the page, with network lookups stubbed out."""
 
+import pytest
 from streamlit.testing.v1 import AppTest
+
+
+@pytest.fixture(autouse=True)
+def no_cache(monkeypatch):
+    """Live-lookup tests stub the sources, so keep the committed cache out of the way."""
+    import hazards.cache as cache
+    monkeypatch.setattr(cache, "load_cache", lambda *a, **k: {})
 
 
 def run(address):
@@ -79,3 +87,32 @@ def test_minimal_tier_has_no_insurance_message(monkeypatch):
     at = run("2775 Embarcadero Rd, Palo Alto, CA 94303")
     assert not at.exception
     assert not any("Flood insurance is typically required" in i.value for i in at.info)
+
+
+def test_cached_sample_works_when_sources_are_down(monkeypatch):
+    import hazards.cache as cache
+    import scripts.arcgis as arcgis
+    from hazards.earthquake import EarthquakeResult
+    from hazards.flood import FloodResult
+    from hazards.wildfire import WildfireResult
+
+    def down(*a, **k):
+        raise RuntimeError("source down")
+    for mod in ("hazards.flood", "hazards.wildfire", "hazards.earthquake"):
+        monkeypatch.setattr(f"{mod}.point_query", down)
+    addr = "2775 Embarcadero Rd, Palo Alto, CA 94303"
+    entry = cache.to_entry(addr, "2026-11-26", FloodResult("VE", None, True),
+                           WildfireResult("NonWildland", "LRA"), EarthquakeResult(False, False, False, False))
+    monkeypatch.setattr(cache, "load_cache", lambda *a, **k: {cache.key(addr): entry})
+    at = run(addr)
+    assert not at.exception
+    assert any(m.value == "VE" for m in at.metric)
+    assert any("Data as of 2026-11-26 (cached)" in c.value for c in at.caption)
+
+
+def test_live_lookup_shows_data_as_of_today(monkeypatch):
+    import hazards.flood as flood
+    monkeypatch.setattr(flood, "point_query", lambda *a, **k: [{"FLD_ZONE": "VE", "ZONE_SUBTY": None, "SFHA_TF": "T"}])
+    at = run("2775 Embarcadero Rd, Palo Alto, CA 94303")
+    assert not at.exception
+    assert any("(live lookup)" in c.value for c in at.caption)

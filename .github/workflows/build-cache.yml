@@ -1,0 +1,26 @@
+name: Build cache
+
+# Manual only: Actions tab -> Build cache -> Run workflow.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python -m scripts.build_cache
+      - name: Commit cache if it changed
+        run: |
+          git config user.name "Brian Pan"
+          git config user.email "bpan.analytics@gmail.com"
+          git add data/cache.json
+          git diff --cached --quiet || git commit -m "Refresh baseline cache"
+          git push
