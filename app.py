@@ -87,7 +87,8 @@ if submitted and address.strip():
         area = {"SRA": "State Responsibility Area", "LRA": "Local Responsibility Area"}.get(w.area)
         hazard_section(
             "Wildfire", "CAL FIRE", w_tier, "CAL FIRE class", w.fhsz or "No polygon",
-            notes=[MESSAGES["wildfire_not_mapped"] if w_tier == "not_mapped" else area],
+            notes=[{"not_mapped": MESSAGES["wildfire_not_mapped"],
+                    "minimal": MESSAGES["wildfire_nonwildland"]}.get(w_tier, area)],
             insurance=MESSAGES["wildfire_high_plus"],
         )
 

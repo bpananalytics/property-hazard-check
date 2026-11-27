@@ -9,7 +9,7 @@ from hazards.scoring import wildfire_tier
     ("Very High", None, "severe"),
     ("High", None, "high"),
     ("Moderate", None, "moderate"),
-    ("NonWildland", None, "not_mapped"),
+    ("NonWildland", None, "minimal"),
     (None, None, "not_mapped"),
     (None, "CAL FIRE timed out", "unknown"),
 ])
@@ -17,5 +17,5 @@ def test_wildfire_tier(fhsz, error, expected):
     assert wildfire_tier(fhsz, error) == expected
 
 
-def test_not_mapped_is_never_minimal():
-    assert wildfire_tier("NonWildland") != "minimal"
+def test_no_polygon_is_never_minimal():
+    assert wildfire_tier(None) != "minimal"

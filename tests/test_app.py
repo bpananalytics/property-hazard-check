@@ -31,11 +31,25 @@ def test_outside_california_warning():
     assert "outside California" in at.warning[0].value
 
 
-def test_nonwildland_shows_not_mapped_and_no_score(monkeypatch):
+def _stub_all(monkeypatch, wildfire_rows):
+    import hazards.earthquake as earthquake
     import hazards.flood as flood
     import hazards.wildfire as wildfire
     monkeypatch.setattr(flood, "point_query", lambda *a, **k: [{"FLD_ZONE": "X", "ZONE_SUBTY": "AREA OF MINIMAL FLOOD HAZARD", "SFHA_TF": "F"}])
-    monkeypatch.setattr(wildfire, "point_query", lambda url, *a, **k: [{"FHSZ": -3, "FHSZ_Description": "NonWildland"}] if "FHSALRA25" in url else [])
+    monkeypatch.setattr(wildfire, "point_query", lambda url, *a, **k: wildfire_rows if "FHSALRA25" in url else [])
+    monkeypatch.setattr(earthquake, "point_query", lambda url, *a, **k: [{"OBJECTID": 1}] if "Alquist" in url else [])
+
+
+def test_nonwildland_is_minimal_and_overall_scores(monkeypatch):
+    _stub_all(monkeypatch, [{"FHSZ": -3, "FHSZ_Description": "NonWildland"}])
+    at = run("2775 Embarcadero Rd, Palo Alto, CA 94303")
+    assert not at.exception
+    assert any(m.value == "NonWildland" for m in at.metric)
+    assert any(m.label == "Overall" and m.value == "Severe" for m in at.metric)
+
+
+def test_no_wildfire_polygon_gives_no_score(monkeypatch):
+    _stub_all(monkeypatch, [])
     at = run("2775 Embarcadero Rd, Palo Alto, CA 94303")
     assert not at.exception
     assert any(m.value == "Not mapped" for m in at.metric)
