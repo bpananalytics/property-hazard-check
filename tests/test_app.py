@@ -49,3 +49,19 @@ def test_earthquake_section_shows_fault_zone(monkeypatch):
     at = run("2775 Embarcadero Rd, Palo Alto, CA 94303")
     assert not at.exception
     assert any(m.value == "Fault zone" for m in at.metric)
+
+
+def test_high_plus_tier_shows_insurance_message(monkeypatch):
+    import hazards.flood as flood
+    monkeypatch.setattr(flood, "point_query", lambda *a, **k: [{"FLD_ZONE": "VE", "ZONE_SUBTY": None, "SFHA_TF": "T"}])
+    at = run("2775 Embarcadero Rd, Palo Alto, CA 94303")
+    assert not at.exception
+    assert any("Flood insurance is typically required" in i.value for i in at.info)
+
+
+def test_minimal_tier_has_no_insurance_message(monkeypatch):
+    import hazards.flood as flood
+    monkeypatch.setattr(flood, "point_query", lambda *a, **k: [{"FLD_ZONE": "X", "ZONE_SUBTY": "AREA OF MINIMAL FLOOD HAZARD", "SFHA_TF": "F"}])
+    at = run("2775 Embarcadero Rd, Palo Alto, CA 94303")
+    assert not at.exception
+    assert not any("Flood insurance is typically required" in i.value for i in at.info)
