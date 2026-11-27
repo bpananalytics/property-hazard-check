@@ -21,15 +21,23 @@ TIER_LABELS = {
 ZONE_NAMES = {"fault": "Fault zone", "liquefaction": "Liquefaction", "landslide": "Landslide"}
 
 
-def hazard_section(title, source, tier, code_label, code_value, notes=()):
-    """One hazard block: tier + raw source code, or an 'unavailable' warning."""
+HIGH_PLUS = ("high", "severe")
+
+
+def hazard_section(title, source, tier, code_label, code_value, notes=(), insurance=None):
+    """One hazard block: tier + raw source code, or an 'unavailable' warning.
+
+    `insurance` is the High+ insurance message, shown only when tier is high or severe.
+    """
     st.markdown(f"#### {title}")
     if tier == "unknown":
-        st.warning(f"{source} data is unavailable right now. Tier: unknown.")
+        st.warning(f"{source} data is unavailable right now. {MESSAGES['unknown']}")
         return
     c1, c2 = st.columns(2)
     c1.metric("Tier", TIER_LABELS[tier])
     c2.metric(code_label, code_value)
+    if insurance and tier in HIGH_PLUS:
+        st.info(f"**Insurance:** {insurance}")
     for note in notes:
         if note:
             st.caption(note)
@@ -70,6 +78,7 @@ if submitted and address.strip():
             "Flood", "FEMA", f_tier, "FEMA zone", f.zone or "No polygon",
             notes=[f.subtype.capitalize() if f.subtype else None,
                    MESSAGES["flood_not_mapped"] if f_tier == "not_mapped" else None],
+            insurance=MESSAGES["flood_high_plus"],
         )
 
         with st.spinner("Checking CAL FIRE hazard zone…"):
@@ -79,6 +88,7 @@ if submitted and address.strip():
         hazard_section(
             "Wildfire", "CAL FIRE", w_tier, "CAL FIRE class", w.fhsz or "No polygon",
             notes=[MESSAGES["wildfire_not_mapped"] if w_tier == "not_mapped" else area],
+            insurance=MESSAGES["wildfire_high_plus"],
         )
 
         with st.spinner("Checking CGS earthquake zones…"):
@@ -89,6 +99,7 @@ if submitted and address.strip():
             ", ".join(ZONE_NAMES[z] for z in e.zones) or "None",
             notes=[{"not_mapped": MESSAGES["earthquake_not_mapped"],
                     "moderate": MESSAGES["earthquake_moderate_floor"]}.get(e_tier)],
+            insurance=MESSAGES["earthquake_high_plus"],
         )
 
         tiers = {"flood": f_tier, "wildfire": w_tier, "earthquake": e_tier}
