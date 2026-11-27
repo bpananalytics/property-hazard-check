@@ -26,7 +26,6 @@ One note per source in [`config/sources.yaml`](../config/sources.yaml). Research
   - Address-range interpolation: the point is estimated along the street segment, not the building or parcel centroid. Near a zone boundary, the point can land on the wrong side.
   - Some sample places (e.g. landmarks) don't match, which is why samples use stored coordinates.
   - No API key and no published rate limit, but no uptime guarantee either.
-- **Trust for this app:** _TODO (Brian)_
 
 ## FEMA National Flood Hazard Layer (NFHL)
 
@@ -42,7 +41,6 @@ One note per source in [`config/sources.yaml`](../config/sources.yaml). Research
   - Regulatory maps, not risk models: they show where flood insurance rules apply, not every place that can flood. Many flood claims come from outside mapped high-risk zones.
   - Preliminary (not yet effective) maps aren't in this layer.
   - Zone D and missing polygons are mapped to **Not mapped**, never Minimal.
-- **Trust for this app:** _TODO (Brian)_
 
 ## CAL FIRE Fire Hazard Severity Zones — Local Responsibility Area (LRA), 2025
 
@@ -55,7 +53,6 @@ One note per source in [`config/sources.yaml`](../config/sources.yaml). Research
   - **Local adoption dates vary.** OSFM issues *recommended* LRA maps; each city adopts them by ordinance (generally within 120 days) and may add zones or raise levels, but not lower them. Legal status at a given address depends on the local adoption date.
   - Hazard, not risk: doesn't account for home hardening, defensible space, or insurer wildfire scores.
   - NonWildland is scored **Minimal** (decision Nov 2026); insurers may still rate wildfire risk using their own models.
-- **Trust for this app:** _TODO (Brian)_
 
 ## CAL FIRE Fire Hazard Severity Zones — State Responsibility Area (SRA)
 
@@ -65,7 +62,6 @@ One note per source in [`config/sources.yaml`](../config/sources.yaml). Research
 - **Last update / cadence:** SRA maps took effect April 1, 2024 (classes went through the Office of Administrative Law rulemaking, with public comments through Aug 9, 2023). Layer last edited May 4, 2026.
 - **Key fields:** same as LRA, but prefixed (`xxFHSZSRA25_3_FHSZ_Description`, etc.); the code matches on the field-name suffix.
 - **Known limits:** federal land (e.g. national forests) is in neither layer, so it comes back **Not mapped**.
-- **Trust for this app:** _TODO (Brian)_
 
 ## CGS Alquist-Priolo Earthquake Fault Zones
 
@@ -77,7 +73,6 @@ One note per source in [`config/sources.yaml`](../config/sources.yaml). Research
 - **Known limits:**
   - CGS says the maps may not show every fault capable of surface rupture.
   - A fault zone maps rupture risk, not shaking. Shaking risk applies statewide, which is why the app has a **Moderate earthquake floor**.
-- **Trust for this app:** _TODO (Brian)_
 
 ## CGS Seismic Hazard Zones — liquefaction and landslide
 
@@ -87,7 +82,6 @@ One note per source in [`config/sources.yaml`](../config/sources.yaml). Research
 - **Last update / cadence:** updated whenever CGS releases new quadrangle maps.
 - **Key fields:** presence of a polygon at the point. `QUAD_NAME`, `RELEASED` give the source map.
 - **Known limits:** CGS notes the maps may not show every area prone to liquefaction or landslides. A zone means a site investigation may be required, not that failure will happen.
-- **Trust for this app:** _TODO (Brian)_
 
 ## CGS Seismic Hazard Zones — unevaluated areas
 
@@ -97,7 +91,6 @@ One note per source in [`config/sources.yaml`](../config/sources.yaml). Research
 - **Last update / cadence:** last modified November 20, 2025; shrinks as new quadrangles are mapped.
 - **Key fields:** presence of a polygon at the point.
 - **Known limits:** in these areas, "no liquefaction zone" means "not studied," not "no hazard." The app reports earthquake as **Not mapped** here instead of applying the Moderate floor.
-- **Trust for this app:** _TODO (Brian)_
 
 ---
 
