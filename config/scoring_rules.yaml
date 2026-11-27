@@ -18,7 +18,8 @@ wildfire:                # CAL FIRE 2025 FHSZ class (LRA + SRA layers)
   severe: [Very High]
   high: [High]
   moderate: [Moderate]
-  not_mapped: [NonWildland, no polygon]   # no tier assigned; never Minimal
+  minimal: [NonWildland]   # CAL FIRE's explicit non-wildland class
+  not_mapped: [no polygon]   # no tier assigned; never Minimal
   unknown: [lookup failed]
 
 earthquake:              # CGS zones; floor = moderate (statewide shaking), except unevaluated areas
@@ -36,4 +37,5 @@ insurance_messages:
   earthquake_moderate_floor: "Not in a mapped CGS zone. Moderate floor: shaking risk applies statewide."
   earthquake_not_mapped: "CGS hasn't evaluated this area for liquefaction or landslide. Earthquake shaking risk still applies statewide."
   flood_not_mapped: "No FEMA flood class here. Lenders and insurers may still require a flood determination."
-  wildfire_not_mapped: "Not in a CAL FIRE fire hazard zone. Insurers may still rate wildfire risk using their own models."
+  wildfire_not_mapped: "No CAL FIRE data at this point. Insurers may still rate wildfire risk using their own models."
+  wildfire_nonwildland: "Not in a CAL FIRE fire hazard zone. Insurers may still rate wildfire risk using their own models."

@@ -40,14 +40,14 @@ def flood_tier(zone: str | None, subtype: str | None = None, error: str | None =
 
 
 # CAL FIRE class by tier (mirrors config/scoring_rules.yaml -> wildfire)
-WILDFIRE_TIERS = {"Very High": "severe", "High": "high", "Moderate": "moderate"}
+WILDFIRE_TIERS = {"Very High": "severe", "High": "high", "Moderate": "moderate", "NonWildland": "minimal"}
 
 
 def wildfire_tier(fhsz: str | None, error: str | None = None) -> str:
     """Map a CAL FIRE FHSZ class to a tier.
 
-    "unknown" = lookup failed. "not_mapped" = no CAL FIRE zone here
-    (NonWildland or no polygon); we don't assign a tier we don't have.
+    "unknown" = lookup failed. NonWildland (CAL FIRE's explicit non-wildland
+    class) -> "minimal". "not_mapped" = no CAL FIRE polygon at this point.
     """
     if error:
         return "unknown"
