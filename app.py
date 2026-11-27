@@ -1,6 +1,7 @@
 """Property Hazard Check — Streamlit entry point."""
 
 import datetime as dt
+from concurrent.futures import ThreadPoolExecutor
 import html
 import pathlib
 import zoneinfo
@@ -25,6 +26,13 @@ TIER_LABELS = {
 ZONE_NAMES = {"fault": "Fault zone", "liquefaction": "Liquefaction", "landslide": "Landslide"}
 HIGH_PLUS = ("high", "severe")
 
+# Official address-lookup maps, linked when a source is unavailable.
+OFFICIAL_MAPS = {
+    "Flood": ("FEMA Flood Map Service Center", "https://msc.fema.gov/portal/home"),
+    "Wildfire": ("CAL FIRE fire hazard severity zones", "https://osfm.fire.ca.gov/what-we-do/community-wildfire-preparedness-and-mitigation/fire-hazard-severity-zones"),
+    "Earthquake": ("CGS EQ Zapp", "https://www.conservation.ca.gov/cgs/sh/eqzapp"),
+}
+
 # Sample buttons: role in data/sample_addresses.csv -> button label (California samples only).
 SAMPLE_LABELS = {
     "fault_zone": "Fault zone", "wildfire": "Wildfire", "flood": "Coastal flood",
@@ -41,12 +49,12 @@ OVERALL_COLORS = {
 }
 
 
-def overall_card(overall: str, worst: str | None, compound: bool) -> None:
+def overall_card(overall: str, worst: str | None, compound: bool, missing: list[str]) -> None:
     """Colored card at the top of the report: overall tier + why."""
     bg, fg = OVERALL_COLORS[overall]
     label = "No Score" if overall == "no_score" else TIER_LABELS[overall]
     if overall == "no_score":
-        why = "Insufficient data: at least one hazard is not mapped or unavailable."
+        why = f"Insufficient data: no tier for {', '.join(missing)}. See the cards below."
     else:
         why = f"Worst single hazard: {worst}."
         if compound:
@@ -65,7 +73,9 @@ def hazard_card(title, source, tier, code_label, code_value, notes=(), insurance
     with st.container(border=True):
         st.markdown(f"**{title}**")
         if tier == "unknown":
-            st.warning(f"{source} data is unavailable right now. {MESSAGES['unknown']}")
+            name, url = OFFICIAL_MAPS[title]
+            st.warning(f"{source} didn't respond, so this hazard has no tier. Try again later, "
+                       f"or check the official map: [{name}]({url})")
             return
         st.metric("Tier", TIER_LABELS[tier])
         st.caption(f"{code_label}: {code_value}")
@@ -110,9 +120,11 @@ if address:
         except Exception:
             g = None
     if g is None:
-        st.error("The address service didn't respond. Try again in a moment.")
+        st.error("The address service (US Census Geocoder) didn't respond. "
+                 "Try again in a moment, or try one of the samples, which work offline.")
     elif not g.found:
-        st.error("Address not found. Check the spelling, or include city and ZIP.")
+        st.error("Address not found. Check the spelling and include the city and ZIP, "
+                 "or try one of the samples.")
     elif not g.in_california:
         st.warning(f"{g.matched_address} is outside California. This tool covers California only.")
     else:
@@ -122,9 +134,10 @@ if address:
             as_of = f"Data as of {cached['fetched']} (cached)"
         else:
             with st.spinner("Checking FEMA, CAL FIRE, and CGS hazard maps…"):
-                f = lookup_flood(g.lat, g.lon)
-                w = lookup_wildfire(g.lat, g.lon)
-                e = lookup_earthquake(g.lat, g.lon)
+                # Run the three sources at once; each one handles its own failure.
+                with ThreadPoolExecutor(max_workers=3) as pool:
+                    jobs = [pool.submit(fn, g.lat, g.lon) for fn in (lookup_flood, lookup_wildfire, lookup_earthquake)]
+                    f, w, e = (j.result() for j in jobs)
             today = dt.datetime.now(zoneinfo.ZoneInfo("America/Los_Angeles")).date().isoformat()
             as_of = f"Data as of {today} (live lookup)"
 
@@ -142,7 +155,8 @@ if address:
             worst = next(name for name, t in tiers.items() if t == overall)
             if worst == "earthquake" and e.zones:
                 worst += f" ({ZONE_NAMES[e.zones[0]].lower()})"
-        overall_card(overall, worst, overall != "no_score" and compound_flag(tiers))
+        missing = [name for name, t in tiers.items() if t in ("not_mapped", "unknown")]
+        overall_card(overall, worst, overall != "no_score" and compound_flag(tiers), missing)
 
         area = {"SRA": "State Responsibility Area", "LRA": "Local Responsibility Area"}.get(w.area)
         c1, c2, c3 = st.columns(3)   # stack on narrow (mobile) screens
