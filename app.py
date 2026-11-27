@@ -1,10 +1,13 @@
 """Property Hazard Check — Streamlit entry point."""
 
+import datetime as dt
 import pathlib
+import zoneinfo
 
 import streamlit as st
 import yaml
 
+from hazards import cache
 from hazards.earthquake import lookup_earthquake
 from hazards.flood import lookup_flood
 from hazards.geocode import geocode
@@ -68,11 +71,19 @@ if submitted and address.strip():
         st.warning(f"{g.matched_address} is outside California. This tool covers California only.")
     else:
         st.subheader(g.matched_address)
-        st.caption(f"{g.lat:.5f}, {g.lon:.5f} · location from {g.source}")
+        cached = cache.lookup(g.matched_address)
+        if cached:
+            f, w, e = cache.to_results(cached)
+            as_of = f"Data as of {cached['fetched']} (cached)"
+        else:
+            today = dt.datetime.now(zoneinfo.ZoneInfo("America/Los_Angeles")).date().isoformat()
+            as_of = f"Data as of {today} (live lookup)"
+        st.caption(f"{g.lat:.5f}, {g.lon:.5f} · location from {g.source} · {as_of}")
         overall_slot = st.empty()   # filled after all lookups, shown at the top
 
-        with st.spinner("Checking FEMA flood zone…"):
-            f = lookup_flood(g.lat, g.lon)
+        if not cached:
+            with st.spinner("Checking FEMA flood zone…"):
+                f = lookup_flood(g.lat, g.lon)
         f_tier = flood_tier(f.zone, f.subtype, f.error)
         hazard_section(
             "Flood", "FEMA", f_tier, "FEMA zone", f.zone or "No polygon",
@@ -81,8 +92,9 @@ if submitted and address.strip():
             insurance=MESSAGES["flood_high_plus"],
         )
 
-        with st.spinner("Checking CAL FIRE hazard zone…"):
-            w = lookup_wildfire(g.lat, g.lon)
+        if not cached:
+            with st.spinner("Checking CAL FIRE hazard zone…"):
+                w = lookup_wildfire(g.lat, g.lon)
         w_tier = wildfire_tier(w.fhsz, w.error)
         area = {"SRA": "State Responsibility Area", "LRA": "Local Responsibility Area"}.get(w.area)
         hazard_section(
@@ -92,8 +104,9 @@ if submitted and address.strip():
             insurance=MESSAGES["wildfire_high_plus"],
         )
 
-        with st.spinner("Checking CGS earthquake zones…"):
-            e = lookup_earthquake(g.lat, g.lon)
+        if not cached:
+            with st.spinner("Checking CGS earthquake zones…"):
+                e = lookup_earthquake(g.lat, g.lon)
         e_tier = earthquake_tier(e)
         hazard_section(
             "Earthquake", "CGS earthquake", e_tier, "CGS zones",

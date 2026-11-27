@@ -18,7 +18,7 @@ streamlit run app.py
 ## How it works
 
 1. **Geocode** the address to a point (US Census Geocoder).
-2. **Check the cache** for a previous result.
+2. **Check the cache** — sample addresses are served from a baseline cache.
 3. **Look up hazard zones** at that point from public data sources.
 4. **Score** each hazard (Minimal / Moderate / High / Severe) and roll up to an overall tier.
 5. **Report** the tiers, raw zone codes, and insurance implications.
@@ -52,9 +52,9 @@ Public places used for demos and tests: [`data/sample_addresses.csv`](data/sampl
 
 ## Reliability
 
-- Pre-loaded cache for sample addresses (demos work even if a source is down).
+- Baseline cache for sample addresses ([`data/cache.json`](data/cache.json)), so demos work even if a source is down. Entries never expire; refresh by hand with the **Build cache** workflow (Actions tab → Run workflow).
 - Daily health check via GitHub Actions; alerts on failure.
-- Every result stores its fetch date and is shown as "Data as of …".
+- Every report shows "Data as of …" — the cache date for cached results, today's date for live lookups.
 
 ## Limitations
 
