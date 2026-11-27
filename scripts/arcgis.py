@@ -2,7 +2,7 @@
 
 import requests
 
-TIMEOUT = 20
+TIMEOUT = 8   # seconds per layer; a slow source becomes "Unknown" instead of hanging the page
 HEADERS = {"User-Agent": "property-hazard-check/0.1 (portfolio project)"}
 
 

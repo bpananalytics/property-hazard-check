@@ -141,3 +141,42 @@ def test_footer_shows_rules_version_and_methodology():
     assert not at.exception
     assert any(c.value.startswith("Rules v1") for c in at.caption)
     assert at.expander[0].label == "How scoring works"
+
+
+def test_one_failed_source_does_not_break_the_report(monkeypatch):
+    import hazards.earthquake as earthquake
+    import hazards.flood as flood
+    import hazards.wildfire as wildfire
+
+    def down(*a, **k):
+        raise TimeoutError("timed out")
+    monkeypatch.setattr(flood, "point_query", down)
+    monkeypatch.setattr(wildfire, "point_query", lambda url, *a, **k: [{"FHSZ": 3, "FHSZ_Description": "High"}] if "FHSALRA25" in url else [])
+    monkeypatch.setattr(earthquake, "point_query", lambda *a, **k: [])
+    at = run("2775 Embarcadero Rd, Palo Alto, CA 94303")
+    assert not at.exception
+    assert any("FEMA didn't respond" in w.value and "msc.fema.gov" in w.value for w in at.warning)
+    assert any(m.value == "High" for m in at.metric)          # wildfire card still renders
+    assert any(">No Score<" in m.value and "no tier for flood" in m.value for m in at.markdown)
+
+
+def test_address_not_found_copy(monkeypatch):
+    class R:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {"result": {"addressMatches": []}}
+    monkeypatch.setattr("requests.get", lambda *a, **k: R())
+    at = run("123 Nowhere Rd, Faketown, CA")
+    assert not at.exception
+    assert "Address not found" in at.error[0].value
+
+
+def test_geocoder_down_copy(monkeypatch):
+    def down(*a, **k):
+        raise TimeoutError("timed out")
+    monkeypatch.setattr("requests.get", down)
+    at = run("123 Nowhere Rd, Faketown, CA")
+    assert not at.exception
+    assert "didn't respond" in at.error[0].value
