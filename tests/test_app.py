@@ -30,7 +30,7 @@ def test_sample_address_shows_flood_section(monkeypatch):
     monkeypatch.setattr(flood, "point_query", lambda *a, **k: [{"FLD_ZONE": "VE", "ZONE_SUBTY": None, "SFHA_TF": "T"}])
     at = run("2775 Embarcadero Rd, Palo Alto, CA 94303")
     assert not at.exception
-    assert any(m.value == "VE" for m in at.metric)
+    assert any(c.value == "FEMA zone: VE" for c in at.caption)
 
 
 def test_outside_california_warning():
@@ -52,8 +52,8 @@ def test_nonwildland_is_minimal_and_overall_scores(monkeypatch):
     _stub_all(monkeypatch, [{"FHSZ": -3, "FHSZ_Description": "NonWildland"}])
     at = run("2775 Embarcadero Rd, Palo Alto, CA 94303")
     assert not at.exception
-    assert any(m.value == "NonWildland" for m in at.metric)
-    assert any(m.label == "Overall" and m.value == "Severe" for m in at.metric)
+    assert any(c.value == "CAL FIRE class: NonWildland" for c in at.caption)
+    assert any("Overall" in m.value and ">Severe<" in m.value for m in at.markdown)
 
 
 def test_no_wildfire_polygon_gives_no_score(monkeypatch):
@@ -61,8 +61,8 @@ def test_no_wildfire_polygon_gives_no_score(monkeypatch):
     at = run("2775 Embarcadero Rd, Palo Alto, CA 94303")
     assert not at.exception
     assert any(m.value == "Not mapped" for m in at.metric)
-    assert any(m.label == "Overall" and m.value == "No Score" for m in at.metric)
-    assert any(c.value == "Insufficient data" for c in at.caption)
+    assert any("Overall" in m.value and ">No Score<" in m.value for m in at.markdown)
+    assert any("Insufficient data" in m.value for m in at.markdown)
 
 
 def test_earthquake_section_shows_fault_zone(monkeypatch):
@@ -70,7 +70,7 @@ def test_earthquake_section_shows_fault_zone(monkeypatch):
     monkeypatch.setattr(earthquake, "point_query", lambda url, *a, **k: [{"OBJECTID": 1}] if "Alquist" in url else [])
     at = run("2775 Embarcadero Rd, Palo Alto, CA 94303")
     assert not at.exception
-    assert any(m.value == "Fault zone" for m in at.metric)
+    assert any(c.value == "CGS zones: Fault zone" for c in at.caption)
 
 
 def test_high_plus_tier_shows_insurance_message(monkeypatch):
@@ -106,7 +106,7 @@ def test_cached_sample_works_when_sources_are_down(monkeypatch):
     monkeypatch.setattr(cache, "load_cache", lambda *a, **k: {cache.key(addr): entry})
     at = run(addr)
     assert not at.exception
-    assert any(m.value == "VE" for m in at.metric)
+    assert any(c.value == "FEMA zone: VE" for c in at.caption)
     assert any("Data as of 2026-11-26 (cached)" in c.value for c in at.caption)
 
 
@@ -116,3 +116,28 @@ def test_live_lookup_shows_data_as_of_today(monkeypatch):
     at = run("2775 Embarcadero Rd, Palo Alto, CA 94303")
     assert not at.exception
     assert any("(live lookup)" in c.value for c in at.caption)
+
+
+def test_sample_button_runs_the_report(monkeypatch):
+    import hazards.cache as cache
+    from hazards.earthquake import EarthquakeResult
+    from hazards.flood import FloodResult
+    from hazards.wildfire import WildfireResult
+    addr = "2227 Piedmont Ave, Berkeley, CA 94720"
+    entry = cache.to_entry(addr, "2026-11-26", FloodResult("X", "AREA OF MINIMAL FLOOD HAZARD", False),
+                           WildfireResult("NonWildland", "LRA"), EarthquakeResult(True, False, False, False))
+    monkeypatch.setattr(cache, "load_cache", lambda *a, **k: {cache.key(addr): entry})
+    at = AppTest.from_file("../app.py", default_timeout=30).run()
+    next(b for b in at.button if b.label == "Fault zone").click()
+    at.run()
+    assert not at.exception
+    assert at.text_input[0].value == addr
+    assert any(">Severe<" in m.value and "earthquake (fault zone)" in m.value for m in at.markdown)
+    assert any("Standard policies exclude earthquake damage" in i.value for i in at.info)
+
+
+def test_footer_shows_rules_version_and_methodology():
+    at = AppTest.from_file("../app.py", default_timeout=30).run()
+    assert not at.exception
+    assert any(c.value.startswith("Rules v1") for c in at.caption)
+    assert at.expander[0].label == "How scoring works"
