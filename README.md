@@ -8,8 +8,10 @@ Enter a California address and get a one-page report on its **flood, wildfire, a
 
 **Live app:** https://property-hazard-check.streamlit.app/
 
-<!-- TODO (Brian): screenshots — desktop report (Fault zone sample) and mobile view -->
-<!-- ![Report for a fault-zone address](docs/img/report-desktop.png) -->
+<p>
+  <img src="docs/img/report-desktop.png" alt="Report for a wildfire sample: overall High, wildfire High with insurance note" width="560">
+  <img src="docs/img/report-mobile.png" alt="Mobile view: Palo Alto Baylands, overall Severe with compound risk" width="240">
+</p>
 
 ## The problem
 
